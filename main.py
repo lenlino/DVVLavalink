@@ -1,14 +1,15 @@
 import os
+from typing import Annotated
 
 import aiofiles
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, File
 from httpcore import ReadTimeout
 
 app = FastAPI()
 counter = 0
 
 @app.post("/send_wav")
-async def send_wav(file: UploadFile):
+async def send_wav(file: Annotated[bytes, File()]):
     global counter
     counter += 1
     if counter > 300:
@@ -18,7 +19,7 @@ async def send_wav(file: UploadFile):
     try:
         async with aiofiles.open(dir,
                                  mode='wb') as f:
-            await f.write(await file.read())
+            await f.write(file)
         return dir
     except ReadTimeout:
         return "error"
